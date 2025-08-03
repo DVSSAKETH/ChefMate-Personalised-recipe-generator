@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChefMate AI: Personalized Recipe Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>ChefMate AI: Your Personalized Recipe Generator</h1>
+    </header>
+
+    <main>
+        <section class="search-section">
+            <h2>What ingredients do you have?</h2>
+            <div class="input-group">
+                <input type="text" id="ingredientInput" placeholder="e.g., chicken, onion, potato" aria-label="Enter your ingredients">
+                <button id="searchBtn">Generate Recipe</button>
+            </div>
+            <p class="instruction-text">Separate ingredients with commas. You can also specify preferences below:</p>
+            <div class="preferences-group">
+                <input type="text" id="cuisineInput" placeholder="Cuisine (e.g., Indian, Italian)" aria-label="Cuisine Preference">
+                <input type="text" id="mealTypeInput" placeholder="Meal Type (e.g., Dinner, Breakfast)" aria-label="Meal Type Preference">
+                <select id="difficultySelect" aria-label="Difficulty Preference">
+                    <option value="">Any Difficulty</option>
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                </select>
+            </div>
+        </section>
+
+        <section class="results-section">
+            <h2 id="generatedRecipeHeading" class="hidden">Generated Recipe</h2>
+            <div id="recipeResults" class="recipe-grid">
+                </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 ChefMate AI.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
