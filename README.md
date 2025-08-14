@@ -89,7 +89,3 @@ Follow these steps to get the project up and running on your local machine.
   - **Ingredient Exclusion:** Add an option to specify ingredients to avoid.
   - **Nutritional Information:** Integrate a feature to provide estimated nutritional data for each recipe.
   - **Image Generation:** Explore using a generative AI image model to create a visual for each recipe.
-
-## 📜 License
-
-This project is licensed under the MIT License.
