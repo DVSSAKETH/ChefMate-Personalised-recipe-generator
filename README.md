@@ -41,8 +41,9 @@ Follow these steps to get the project up and running on your local machine.
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/your-username/chefmate-ai.git
-    cd chefmate-ai
+    git clone https://github.com/your-username/ChefMate-Personalised-recipe-generator.git
+    cd ChefMate-Personalised-recipe-generator
+
     ```
 
 2.  **Install backend dependencies:**
