@@ -30,7 +30,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // --- API Endpoint for Generating Recipes ---
 app.post('/api/generate-recipe', async (req, res) => {
-    const { ingredients, cuisine, mealType, difficulty } = req.body;
+    const { ingredients, cuisine, mealType, difficulty, course } = req.body;
 
     if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
         return res.status(400).json({ error: 'Please provide at least one ingredient.' });
@@ -38,18 +38,30 @@ app.post('/api/generate-recipe', async (req, res) => {
 
     const ingredientsList = ingredients.join(', ');
 
-    // --- PROMPT ENGINEERING: Adjusted to ask for an array of recipes ---
+    // --- REFINED PROMPT: More specific and restrictive instructions ---
+    let coursePreference = '';
+    // Conditional logic to handle the "Side Dish" request specifically
+    if (course && course.toLowerCase() === 'side dish') {
+        coursePreference = 'Generate a curry, chutney that can be served as a side dish.';
+    } else if (course) {
+        coursePreference = `Course preference: ${course}`;
+    }
+
     const prompt = `
         You are a highly skilled culinary assistant. Generate an array of 3 distinct recipe JSON objects based on the following ingredients and preferences.
-        Assume common minor ingredients like salt, pepper, water, oil, etc., are available but explicitly mention them if they are key to the recipe.
         
         Ingredients available: ${ingredientsList}
+        
+        STRICTLY USE ONLY THE INGREDIENTS FROM THE PROVIDED LIST. DO NOT ADD ANY MAJOR INGREDIENTS THAT ARE NOT LISTED, such as rice, pasta, bread, or tortillas. You may assume minor ingredients like salt, pepper, oil, and water are available.
+
+        Assume the user has common minor ingredients like **salt, pepper, oil, water** .
+
         ${cuisine ? `Cuisine preference: ${cuisine}` : ''}
         ${mealType ? `Meal type preference: ${mealType}` : ''}
+        ${coursePreference}
         ${difficulty ? `Desired difficulty: ${difficulty}` : ''}
 
         Return the recipes as a JSON array with each object having the following structure. Ensure all fields are populated accurately. If you cannot generate a suitable value, use "N/A" for strings.
-        Each recipe object must be unique and distinct from the others.
         [
             {
                 "id": "generate_a_unique_id_like_a_timestamp",
@@ -67,14 +79,14 @@ app.post('/api/generate-recipe', async (req, res) => {
                     "Ingredient 1 (e.g., 1 cup flour)",
                     "Ingredient 2 (e.g., 2 large eggs)"
                 ],
-                "instructions": "Step 1. Clearly describe the first step.\\nStep 2. Move to the next step, using '\\n' for new lines.\\nStep 3. Provide all necessary details logically."
+                "instructions": "Step 1. Clearly describe the first step.\\nStep 2. Move to the next step, using '\\n' for new lines.\\nStep 3. Provide all necessary details logically...."
             },
             {...},
             {...}
         ]
         
-        Make sure the 'ingredients' field is strictly a list of strings, and 'instructions' is a single string with clear steps separated by newline characters ('\\n').
-        The 'image_url' must be exactly "/images/placeholder-food.jpg" for every recipe.
+        Make sure the 'ingredients' field is strictly a list of strings, and 'instructions' is a single string with clear steps and these steps should be understood for anyone.
+        The steps should be easily understandable and begineer friendly. A begineer can make that recipe easily. the steps should be separated by newline characters ('\\n').
         Ensure the generated JSON is valid and complete, with no surrounding text or markdown unless necessary.
     `;
 
@@ -86,7 +98,6 @@ app.post('/api/generate-recipe', async (req, res) => {
 
         let generatedRecipes = [];
         try {
-            // Attempt to parse the content as a JSON array directly
             generatedRecipes = JSON.parse(recipeContent);
         } catch (parseError) {
             console.warn("Failed to parse Gemini response as JSON array directly. Trying markdown block extraction:", parseError);
@@ -110,19 +121,15 @@ app.post('/api/generate-recipe', async (req, res) => {
             }
         }
 
-        // Post-processing and validation for each generated recipe in the array
         const processedRecipes = generatedRecipes.map(recipe => {
-            // Ensure unique ID for frontend keys
             if (!recipe.id) {
                 recipe.id = `recipe_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
             }
-            // Ensure instructions is a string
             if (Array.isArray(recipe.instructions)) {
                 recipe.instructions = recipe.instructions.join('\n');
             } else if (typeof recipe.instructions !== 'string') {
                 recipe.instructions = "Instructions not available.";
             }
-            // Ensure ingredients is an array of strings
             if (!Array.isArray(recipe.ingredients)) {
                 recipe.ingredients = ["Ingredients not specified."];
             } else {
@@ -131,7 +138,6 @@ app.post('/api/generate-recipe', async (req, res) => {
             return recipe;
         });
 
-        // Final response now sends the array of recipes
         res.json({ results: processedRecipes, stats: { totalGenerated: processedRecipes.length } });
 
     } catch (error) {
@@ -144,5 +150,4 @@ app.post('/api/generate-recipe', async (req, res) => {
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
     console.log(`Frontend accessible at http://localhost:${port}`);
-    console.log(`Make sure 'public/images/placeholder-food.jpg' exists for default recipe images.`);
 });
